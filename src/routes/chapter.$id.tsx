@@ -110,8 +110,8 @@ function ChapterPage() {
 
       <div className="mb-6 grid min-w-0 grid-cols-2 items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-soft sm:flex sm:flex-wrap sm:justify-center">
         <div className="col-span-2 flex min-w-0 justify-self-center rounded-full bg-muted p-1">
-          <Link to="/chapter/$id" params={{ id }} search={{ source }} className={tab(mode !== "reading")}>{t("learning")}</Link>
-          <Link to="/chapter/$id" params={{ id }} search={{ mode: "reading", source }} className={tab(mode === "reading")}>{t("reading")}</Link>
+          <Link to="/chapter/$id" params={{ id }} search={{ source }} className={tab(true)}>{t("learning")}</Link>
+          <Link to="/chapter/$id" params={{ id }} search={{ mode: "reading", source }} className={tab(false)}>{t("reading")}</Link>
         </div>
         <div className="col-span-2 flex min-w-0 items-center gap-1 justify-self-center">
           <select aria-label={t("reciter")} value={reader} onChange={(e) => { setOverride(undefined); setReader(e.target.value); }} className="min-w-0 max-w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm">
