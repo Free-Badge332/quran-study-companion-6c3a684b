@@ -38,21 +38,27 @@ export function bareLetters(text: string): string {
     .trim();
 }
 
-/** Words of `other` marked true when they have no counterpart in `hafs` (word-level LCS on bare letters). */
-export function markDifferences(other: string, hafs: string): { word: string; differs: boolean }[] {
-  const a = other.split(/\s+/).filter(Boolean);
-  const b = hafs.split(/\s+/).filter(Boolean).map(bareLetters);
-  const an = a.map(bareLetters);
-  const dp = Array.from({ length: a.length + 1 }, () => new Array<number>(b.length + 1).fill(0));
-  for (let i = a.length - 1; i >= 0; i--)
-    for (let j = b.length - 1; j >= 0; j--)
-      dp[i]![j] = an[i] === b[j] ? dp[i + 1]![j + 1]! + 1 : Math.max(dp[i + 1]![j]!, dp[i]![j + 1]!);
-  const out: { word: string; differs: boolean }[] = [];
-  let i = 0, j = 0;
-  while (i < a.length) {
-    if (j < b.length && an[i] === b[j]) { out.push({ word: a[i]!, differs: false }); i++; j++; }
-    else if (j < b.length && dp[i]![j + 1]! >= dp[i + 1]![j]!) j++;
-    else { out.push({ word: a[i]!, differs: true }); i++; }
+/**
+ * Mark which words of `other` have no counterpart in `hafs` across a whole surah, so differing
+ * verse numbering between riwayat does not matter. Greedy walk that resyncs within a short window.
+ */
+export function markSurahDifferences(other: RiwayahVerse[], hafs: string[]): { id: number; words: { word: string; differs: boolean }[] }[] {
+  const b = hafs.flatMap((t) => t.split(/\s+/).filter(Boolean)).map(bareLetters);
+  const flat = other.flatMap((v) => v.text.split(/\s+/).filter(Boolean).map((word) => ({ id: v.id, word, bare: bareLetters(word), differs: false })));
+  const W = 8;
+  let j = 0;
+  for (let i = 0; i < flat.length; i++) {
+    if (flat[i]!.bare === b[j]) { j++; continue; }
+    let best: [number, number] | null = null;
+    for (let di = 0; di <= W && !best; di++)
+      for (let dj = 0; dj <= W; dj++) {
+        if (di + dj === 0) continue;
+        const x = flat[i + di], y = b[j + dj];
+        if (x && y !== undefined && x.bare === y && flat[i + di + 1]?.bare === b[j + dj + 1]) { best = [di, dj]; break; }
+      }
+    if (!best) { flat[i]!.differs = true; j++; continue; }
+    for (let k = 0; k < best[0]; k++) flat[i + k]!.differs = true;
+    i += best[0]; j += best[1] + 1;
   }
-  return out;
+  return other.map((v) => ({ id: v.id, words: flat.filter((w) => w.id === v.id).map(({ word, differs }) => ({ word, differs })) }));
 }
