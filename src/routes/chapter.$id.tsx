@@ -158,7 +158,13 @@ const tab = (active: boolean) =>
 
 function Bismillah({ id, size }: { id: number; size: number }) {
   if (id === 1 || id === 9) return null;
-  return <img src="/imgs/bsm-allah.svg" alt="Bismillah" className="mx-auto mb-6 max-w-full object-contain dark:invert" style={{ height: `${3.5 * size}rem` }} />;
+  return (
+    <div className="mb-6 text-center" dir="ltr">
+      <img src="/imgs/bsm-allah.svg" alt="Bismillah" className="mx-auto max-w-full object-contain dark:invert" style={{ height: `${3.5 * size}rem` }} />
+      <p className="mt-3 text-sm italic text-muted-foreground">Bismi Allahi alrrahmani alrraheemi</p>
+      <p className="mt-1 text-foreground/85" style={{ fontSize: `${Math.max(size, 0.9)}rem` }}>In the name of Allah, the Entirely Merciful, the Especially Merciful</p>
+    </div>
+  );
 }
 
 type RepeatMode = "off" | "ayah" | "surah";
