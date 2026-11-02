@@ -13,6 +13,8 @@ export type Reciter = {
   kind: ReciterKind;
   style: string;
   riwayah: string;
+  /** A'udhu billah recording, only for reciters who recorded one (verse-by-verse sources). */
+  istiadhaUrl?: string;
   quality: string;
   source: string;
   sourceUrl: string;
@@ -37,7 +39,7 @@ export const RECITERS: Reciter[] = [
   { id: "alzain-ahmad", name: "Sheikh Alzain Mohamed Ahmed", arabicName: "الزين محمد أحمد", category: "sudanese", country: "Sudan", kind: "surah", style: "Murattal", riwayah: "Hafs an Asim", quality: "MP3, whole surahs (114)", source: MP3QURAN, sourceUrl: "https://mp3quran.net/eng/zain", server: "https://cdn.mp3quran.net/audio/zain-ahmad/r1/", bio: null, licensing: MP3QURAN_LICENCE },
   { id: "Abdul_Basit_Mujawwad_128kbps", name: "Abdul Basit Abdus-Samad", arabicName: "عبد الباسط عبد الصمد", category: "international", country: "Egypt", kind: "ayah", style: "Mujawwad", riwayah: "Hafs an Asim", quality: "128 kbps MP3", source: EVERYAYAH, sourceUrl: "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/", bio: null, licensing: EVERYAYAH_LICENCE },
   { id: "Yasser_Ad-Dussary_128kbps", name: "Yasser Ad-Dussary", arabicName: "ياسر الدوسري", category: "international", country: "Saudi Arabia", kind: "ayah", style: "Murattal", riwayah: "Hafs an Asim", quality: "128 kbps MP3", source: EVERYAYAH, sourceUrl: "https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/", bio: null, licensing: EVERYAYAH_LICENCE },
-  { id: "Alafasy_128kbps", name: "Mishary Rashid Alafasy", arabicName: "مشاري راشد العفاسي", category: "international", country: "Kuwait", kind: "ayah", style: "Murattal", riwayah: "Hafs an Asim", quality: "128 kbps MP3", source: EVERYAYAH, sourceUrl: "https://everyayah.com/data/Alafasy_128kbps/", bio: null, licensing: EVERYAYAH_LICENCE },
+  { id: "Alafasy_128kbps", istiadhaUrl: "https://everyayah.com/data/Alafasy_128kbps/audhubillah.mp3", name: "Mishary Rashid Alafasy", arabicName: "مشاري راشد العفاسي", category: "international", country: "Kuwait", kind: "ayah", style: "Murattal", riwayah: "Hafs an Asim", quality: "128 kbps MP3", source: EVERYAYAH, sourceUrl: "https://everyayah.com/data/Alafasy_128kbps/", bio: null, licensing: EVERYAYAH_LICENCE },
 ];
 
 /** Every reciter on MP3Quran.net with a complete 114-surah recording (snapshot bundled for offline browsing). */

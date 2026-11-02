@@ -10,7 +10,9 @@ import { useLang } from "@/lib/lang";
 import { addReadingSeconds, isBookmarked, markVerseRead, toggleBookmark, useProgress } from "@/lib/progress";
 
 import { Button } from '@/components/ui/button';
-import { RECITERS, isSurahReciter } from '@/lib/reciters';
+import { RECITERS, isSurahReciter, reciterById } from '@/lib/reciters';
+import { RiwayahText } from '@/components/riwayah-text';
+import { riwayahKey } from '@/lib/riwayah';
 import { SurahPlayer } from '@/components/surah-player';
 import { AudioDownloads } from '@/components/audio-downloads';
 import { usePreference } from '@/lib/preferences';
@@ -80,6 +82,7 @@ function ChapterPage() {
 
   if (!meta) return <p className="p-10 text-center text-muted-foreground">{t("surahNotFound")}</p>;
 
+  const riwayah = reciterById(reader)?.riwayah ?? "Hafs an Asim";
   if (mode === "reading") {
     return (
       <div className="fixed inset-0 z-[60] overflow-y-auto bg-background">
@@ -91,7 +94,9 @@ function ChapterPage() {
           <p className="mb-2 text-center font-arabic text-3xl text-primary">{meta.name.ar}</p>
           {query.isPending && <div className="h-64 animate-pulse rounded-xl bg-muted" />}
           {query.isError && <p role="alert" className="text-center text-destructive">{t("loadError")}</p>}
-          {query.data && <Reading chapter={query.data} size={size} leading={leading} full />}
+          {query.data && (riwayahKey(riwayah) && riwayahKey(riwayah) !== "hafs"
+            ? <RiwayahText riwayah={riwayah} chapter={query.data} size={size} full />
+            : <Reading chapter={query.data} size={size} leading={leading} full />)}
         </div>
       </div>
     );
@@ -154,6 +159,7 @@ function ChapterPage() {
       </div>
 
       {isSurahReciter(reader) ? <div className="mb-6"><SurahPlayer reader={reader} chapter={num} downloadedOnly={source === 'downloaded'} /></div> : <AudioDownloads reader={reader} chapter={num} count={meta.totalVerses} />}
+      {query.data && <RiwayahText riwayah={riwayah} chapter={query.data} size={size} />}
 
       {query.isPending && <div className="h-64 animate-pulse rounded-xl bg-muted" />}
       {query.isError && <div role="alert" className="space-y-3 text-center"><p className="text-destructive">{t("loadError")}</p><Button variant="outline" disabled={query.isFetching} onClick={() => void query.refetch()}><RefreshCw size={16} />{t("retry")}</Button></div>}
@@ -389,10 +395,15 @@ function Learning({ chapter, size, leading, reader, q, speed, repeat, repeatMode
         setMediaPlaybackState('playing');
         sleepTimer.playbackResumed();
       };
-      // Verse-by-verse reciters: recite the Bismillah (their 1:1 recording) before verse 1.
-      if (resumeAt === undefined && count === 1 && vid === chapter.verses[0]?.id && chapter.id !== 1 && chapter.id !== 9) {
+      // Verse-by-verse reciters: recite A'udhu billah (only if this reciter recorded it), then the Bismillah, before verse 1.
+      const starting = resumeAt === undefined && count === 1 && vid === chapter.verses[0]?.id;
+      const prerolls: (() => Promise<{ url: string; release: () => void }>)[] = [];
+      const istiadha = reciterById(reader)?.istiadhaUrl;
+      if (starting && istiadha && source !== 'downloaded') prerolls.push(async () => ({ url: istiadha, release: () => {} }));
+      if (starting && chapter.id !== 1 && chapter.id !== 9) prerolls.push(() => resolveAudio(reader, 1, 1, source ?? 'auto'));
+      for (const next of prerolls) {
         try {
-          const b = await resolveAudio(reader, 1, 1, source ?? 'auto');
+          const b = await next();
           if (token !== request.current) { b.release(); return; }
           const pre = new Audio(b.url);
           pre.playbackRate = opts.current.speed;
@@ -401,7 +412,7 @@ function Learning({ chapter, size, leading, reader, q, speed, repeat, repeatMode
           await new Promise<void>((done) => { pre.onended = () => done(); pre.onerror = () => done(); void pre.play().then(() => { setLoading(false); setPlaying(vid); }).catch(() => done()); });
           b.release();
           if (token !== request.current) return;
-        } catch { /* Bismillah unavailable (e.g. offline, not downloaded): start with the verse. */ }
+        } catch { /* Pre-roll unavailable (e.g. offline, not downloaded): continue. */ }
       }
       audio.current = a;
       if (resumeAt !== undefined) a.currentTime = resumeAt;
