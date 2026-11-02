@@ -148,7 +148,7 @@ function ChapterPage() {
           {t("size")}
           <input aria-label={t("size")} className="min-w-0 w-full sm:w-32" type="range" min={0.7} max={1.6} step={0.1} value={size} onChange={(e) => setSize(+e.target.value)} />
         </label>
-        {mode !== "reading" && (
+        {(
           <input aria-label={t("searchVerses")} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchVerses")} className="col-span-2 min-w-0 w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm sm:w-auto" />
         )}
       </div>
