@@ -24,6 +24,7 @@ export function RiwayahText({ riwayah, chapter, size, full = false }: { riwayah:
       </p>
       {q.isPending && <div className="mt-3 h-32 animate-pulse rounded-lg bg-muted" />}
       {q.isError && <p role="alert" className="mt-3 text-sm text-destructive">Couldn't load the riwayah text.</p>}
+      {full && chapter.id !== 9 && <img src="/imgs/bsm-allah.svg" alt="Bismillah" className="mx-auto mt-3 max-w-full object-contain dark:invert" style={{ height: `${3 * size}rem` }} />}
       {verses.length > 0 && (
         <p dir="rtl" lang="ar" className="mt-3 text-justify text-foreground" style={{ fontFamily: `"riwayah-${key}", var(--font-arabic)`, fontSize: `${(full ? 2.1 : 1.9) * size}rem`, lineHeight: `${(full ? 3.6 : 3.2) * size}rem`, textAlignLast: "center" }}>
           {verses.map((v) => {
