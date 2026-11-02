@@ -80,6 +80,24 @@ function ChapterPage() {
 
   if (!meta) return <p className="p-10 text-center text-muted-foreground">{t("surahNotFound")}</p>;
 
+  if (mode === "reading") {
+    return (
+      <div className="fixed inset-0 z-[60] overflow-y-auto bg-background">
+        <Link to="/chapter/$id" params={{ id }} search={{ source }} aria-label={t("learning")}
+          className="fixed left-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-card/80 text-primary shadow-soft backdrop-blur">
+          <ChevronLeft size={22} />
+        </Link>
+        <div className="px-2 py-3">
+          <p className="mb-2 text-center font-arabic text-3xl text-primary">{meta.name.ar}</p>
+          {query.isPending && <div className="h-64 animate-pulse rounded-xl bg-muted" />}
+          {query.isError && <p role="alert" className="text-center text-destructive">{t("loadError")}</p>}
+          {query.data && <Reading chapter={query.data} size={size} leading={leading} full />}
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-3 pb-24 sm:px-4">
       <div className="py-8 text-center">
