@@ -174,8 +174,9 @@ function ChapterPage() {
 const tab = (active: boolean) =>
   `inline-flex items-center rounded-full px-4 py-2.5 min-h-11 text-sm font-medium transition ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`;
 
-function Bismillah({ id, size }: { id: number; size: number }) {
+function Bismillah({ id, size, plain = false }: { id: number; size: number; plain?: boolean }) {
   if (id === 1 || id === 9) return null;
+  if (plain) return <img src="/imgs/bsm-allah.svg" alt="Bismillah" className="mx-auto mb-4 max-w-full object-contain dark:invert" style={{ height: `${3 * size}rem` }} />;
   return (
     <div className="mb-6 text-center" dir="ltr">
       <img src="/imgs/bsm-allah.svg" alt="Bismillah" className="mx-auto max-w-full object-contain dark:invert" style={{ height: `${3.5 * size}rem` }} />
@@ -491,10 +492,10 @@ function Learning({ chapter, size, leading, reader, q, speed, repeat, repeatMode
   );
 }
 
-function Reading({ chapter, size, leading }: { chapter: Chapter; size: number; leading: number }) {
+function Reading({ chapter, size, leading, full = false }: { chapter: Chapter; size: number; leading: number; full?: boolean }) {
   return (
-    <div className="mushaf min-w-0 rounded-xl border border-border bg-card p-3 shadow-soft sm:p-6 md:p-10" dir="rtl">
-      <Bismillah id={chapter.id} size={size} />
+    <div className={full ? "min-w-0 px-1" : "mushaf min-w-0 rounded-xl border border-border bg-card p-3 shadow-soft sm:p-6 md:p-10"} dir="rtl">
+      <Bismillah id={chapter.id} size={size} plain={full} />
       <p className="min-w-0 [overflow-wrap:anywhere] font-arabic text-justify text-foreground" style={{ fontSize: `${2.1 * size}rem`, lineHeight: `${3.6 * size * leading}rem`, textAlignLast: "center" }}>
         {chapter.verses.map((v) => (
           <span key={v.id}>
