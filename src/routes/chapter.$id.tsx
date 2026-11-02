@@ -370,6 +370,20 @@ function Learning({ chapter, size, leading, reader, q, speed, repeat, repeatMode
         setMediaPlaybackState('playing');
         sleepTimer.playbackResumed();
       };
+      // Verse-by-verse reciters: recite the Bismillah (their 1:1 recording) before verse 1.
+      if (resumeAt === undefined && count === 1 && vid === chapter.verses[0]?.id && chapter.id !== 1 && chapter.id !== 9) {
+        try {
+          const b = await resolveAudio(reader, 1, 1, source ?? 'auto');
+          if (token !== request.current) { b.release(); return; }
+          const pre = new Audio(b.url);
+          pre.playbackRate = opts.current.speed;
+          pre.volume = sleepTimer.check();
+          audio.current = pre;
+          await new Promise<void>((done) => { pre.onended = () => done(); pre.onerror = () => done(); void pre.play().then(() => { setLoading(false); setPlaying(vid); }).catch(() => done()); });
+          b.release();
+          if (token !== request.current) return;
+        } catch { /* Bismillah unavailable (e.g. offline, not downloaded): start with the verse. */ }
+      }
       audio.current = a;
       if (resumeAt !== undefined) a.currentTime = resumeAt;
       await a.play();
