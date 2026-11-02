@@ -19,3 +19,4 @@
 - Open native user storage independently from read-only Quran content; use packaged chapter JSON if the content database cannot open or is incomplete, so content failures never block saves or require external text requests.
 - Theme choice is saved in device storage (preference:theme) with a localStorage mirror read by an inline head script so the first paint has no flash; device storage stays the source of truth.
 - Islamic feature icons come from src/components/icons/islamic.tsx (currentColor line + gold accent via the --gold token, tone="mono" to flatten); ordinary UI actions stay Lucide, so icons stay offline and theme-aware.
+- Non-Hafs riwayah text is bundled per chapter under public/quran/riwayat/<key>/ with its KFGQPC font by scripts/prepare-riwayat.py, and differences are found by a whole-surah word walk, since riwayat number verses differently.
