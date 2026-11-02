@@ -22,7 +22,7 @@ export function RiwayahText({ riwayah, chapter, size, full = false }: { riwayah:
     <section aria-label={`${RIWAYAH_LABEL[key]} text`} className={full ? "mb-4" : "mb-6 rounded-xl border border-border bg-card p-3 shadow-soft sm:p-6"}>
       <p className="text-sm text-muted-foreground" dir="ltr">
         Text in the <span className="font-medium text-foreground">{RIWAYAH_LABEL[key]}</span> riwayah, matching this recitation.{" "}
-        Words that differ from Hafs are <mark className="rounded bg-gold/25 px-1 text-foreground">highlighted</mark> ({changed} {changed === 1 ? "verse" : "verses"}).{numberingNote}
+        Words written differently from Hafs are <mark className="rounded bg-gold/25 px-1 text-foreground">highlighted</mark> ({changed} {changed === 1 ? "verse" : "verses"}).{numberingNote}
       </p>
       {q.isPending && <div className="mt-3 h-32 animate-pulse rounded-lg bg-muted" />}
       {q.isError && <p role="alert" className="mt-3 text-sm text-destructive">Couldn't load the riwayah text.</p>}
