@@ -80,6 +80,24 @@ function ChapterPage() {
 
   if (!meta) return <p className="p-10 text-center text-muted-foreground">{t("surahNotFound")}</p>;
 
+  if (mode === "reading") {
+    return (
+      <div className="fixed inset-0 z-[60] overflow-y-auto bg-background">
+        <Link to="/chapter/$id" params={{ id }} search={{ source }} aria-label={t("learning")}
+          className="fixed left-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-card/80 text-primary shadow-soft backdrop-blur">
+          <ChevronLeft size={22} />
+        </Link>
+        <div className="px-2 py-3">
+          <p className="mb-2 text-center font-arabic text-3xl text-primary">{meta.name.ar}</p>
+          {query.isPending && <div className="h-64 animate-pulse rounded-xl bg-muted" />}
+          {query.isError && <p role="alert" className="text-center text-destructive">{t("loadError")}</p>}
+          {query.data && <Reading chapter={query.data} size={size} leading={leading} full />}
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-3 pb-24 sm:px-4">
       <div className="py-8 text-center">
@@ -92,8 +110,8 @@ function ChapterPage() {
 
       <div className="mb-6 grid min-w-0 grid-cols-2 items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-soft sm:flex sm:flex-wrap sm:justify-center">
         <div className="col-span-2 flex min-w-0 justify-self-center rounded-full bg-muted p-1">
-          <Link to="/chapter/$id" params={{ id }} search={{ source }} className={tab(mode !== "reading")}>{t("learning")}</Link>
-          <Link to="/chapter/$id" params={{ id }} search={{ mode: "reading", source }} className={tab(mode === "reading")}>{t("reading")}</Link>
+          <Link to="/chapter/$id" params={{ id }} search={{ source }} className={tab(true)}>{t("learning")}</Link>
+          <Link to="/chapter/$id" params={{ id }} search={{ mode: "reading", source }} className={tab(false)}>{t("reading")}</Link>
         </div>
         <div className="col-span-2 flex min-w-0 items-center gap-1 justify-self-center">
           <select aria-label={t("reciter")} value={reader} onChange={(e) => { setOverride(undefined); setReader(e.target.value); }} className="min-w-0 max-w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm">
@@ -130,7 +148,7 @@ function ChapterPage() {
           {t("size")}
           <input aria-label={t("size")} className="min-w-0 w-full sm:w-32" type="range" min={0.7} max={1.6} step={0.1} value={size} onChange={(e) => setSize(+e.target.value)} />
         </label>
-        {mode !== "reading" && (
+        {(
           <input aria-label={t("searchVerses")} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchVerses")} className="col-span-2 min-w-0 w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm sm:w-auto" />
         )}
       </div>
@@ -139,7 +157,7 @@ function ChapterPage() {
 
       {query.isPending && <div className="h-64 animate-pulse rounded-xl bg-muted" />}
       {query.isError && <div role="alert" className="space-y-3 text-center"><p className="text-destructive">{t("loadError")}</p><Button variant="outline" disabled={query.isFetching} onClick={() => void query.refetch()}><RefreshCw size={16} />{t("retry")}</Button></div>}
-      {query.data && (mode === "reading" ? <Reading chapter={query.data} size={size} leading={leading} /> : <Learning key={`${id}-${verseReader}-${source}`} chapter={query.data} size={size} leading={leading} reader={verseReader} q={q} speed={speed} repeat={repeat} repeatMode={repeatMode} autoplay={autoplay === 1} continuous={continuous} source={source} initialVerse={initialVerse} />)}
+      {query.data && (<Learning key={`${id}-${verseReader}-${source}`} chapter={query.data} size={size} leading={leading} reader={verseReader} q={q} speed={speed} repeat={repeat} repeatMode={repeatMode} autoplay={autoplay === 1} continuous={continuous} source={source} initialVerse={initialVerse} />)}
 
       <nav className="mt-10 flex justify-between">
         {num > 1 ? (
@@ -156,8 +174,9 @@ function ChapterPage() {
 const tab = (active: boolean) =>
   `inline-flex items-center rounded-full px-4 py-2.5 min-h-11 text-sm font-medium transition ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`;
 
-function Bismillah({ id, size }: { id: number; size: number }) {
+function Bismillah({ id, size, plain = false }: { id: number; size: number; plain?: boolean }) {
   if (id === 1 || id === 9) return null;
+  if (plain) return <img src="/imgs/bsm-allah.svg" alt="Bismillah" className="mx-auto mb-4 max-w-full object-contain dark:invert" style={{ height: `${3 * size}rem` }} />;
   return (
     <div className="mb-6 text-center" dir="ltr">
       <img src="/imgs/bsm-allah.svg" alt="Bismillah" className="mx-auto max-w-full object-contain dark:invert" style={{ height: `${3.5 * size}rem` }} />
@@ -370,6 +389,20 @@ function Learning({ chapter, size, leading, reader, q, speed, repeat, repeatMode
         setMediaPlaybackState('playing');
         sleepTimer.playbackResumed();
       };
+      // Verse-by-verse reciters: recite the Bismillah (their 1:1 recording) before verse 1.
+      if (resumeAt === undefined && count === 1 && vid === chapter.verses[0]?.id && chapter.id !== 1 && chapter.id !== 9) {
+        try {
+          const b = await resolveAudio(reader, 1, 1, source ?? 'auto');
+          if (token !== request.current) { b.release(); return; }
+          const pre = new Audio(b.url);
+          pre.playbackRate = opts.current.speed;
+          pre.volume = sleepTimer.check();
+          audio.current = pre;
+          await new Promise<void>((done) => { pre.onended = () => done(); pre.onerror = () => done(); void pre.play().then(() => { setLoading(false); setPlaying(vid); }).catch(() => done()); });
+          b.release();
+          if (token !== request.current) return;
+        } catch { /* Bismillah unavailable (e.g. offline, not downloaded): start with the verse. */ }
+      }
       audio.current = a;
       if (resumeAt !== undefined) a.currentTime = resumeAt;
       await a.play();
@@ -459,10 +492,10 @@ function Learning({ chapter, size, leading, reader, q, speed, repeat, repeatMode
   );
 }
 
-function Reading({ chapter, size, leading }: { chapter: Chapter; size: number; leading: number }) {
+function Reading({ chapter, size, leading, full = false }: { chapter: Chapter; size: number; leading: number; full?: boolean }) {
   return (
-    <div className="mushaf min-w-0 rounded-xl border border-border bg-card p-3 shadow-soft sm:p-6 md:p-10" dir="rtl">
-      <Bismillah id={chapter.id} size={size} />
+    <div className={full ? "min-w-0 px-1" : "mushaf min-w-0 rounded-xl border border-border bg-card p-3 shadow-soft sm:p-6 md:p-10"} dir="rtl">
+      <Bismillah id={chapter.id} size={size} plain={full} />
       <p className="min-w-0 [overflow-wrap:anywhere] font-arabic text-justify text-foreground" style={{ fontSize: `${2.1 * size}rem`, lineHeight: `${3.6 * size * leading}rem`, textAlignLast: "center" }}>
         {chapter.verses.map((v) => (
           <span key={v.id}>
