@@ -157,7 +157,7 @@ function ChapterPage() {
 
       {query.isPending && <div className="h-64 animate-pulse rounded-xl bg-muted" />}
       {query.isError && <div role="alert" className="space-y-3 text-center"><p className="text-destructive">{t("loadError")}</p><Button variant="outline" disabled={query.isFetching} onClick={() => void query.refetch()}><RefreshCw size={16} />{t("retry")}</Button></div>}
-      {query.data && (mode === "reading" ? <Reading chapter={query.data} size={size} leading={leading} /> : <Learning key={`${id}-${verseReader}-${source}`} chapter={query.data} size={size} leading={leading} reader={verseReader} q={q} speed={speed} repeat={repeat} repeatMode={repeatMode} autoplay={autoplay === 1} continuous={continuous} source={source} initialVerse={initialVerse} />)}
+      {query.data && (<Learning key={`${id}-${verseReader}-${source}`} chapter={query.data} size={size} leading={leading} reader={verseReader} q={q} speed={speed} repeat={repeat} repeatMode={repeatMode} autoplay={autoplay === 1} continuous={continuous} source={source} initialVerse={initialVerse} />)}
 
       <nav className="mt-10 flex justify-between">
         {num > 1 ? (
