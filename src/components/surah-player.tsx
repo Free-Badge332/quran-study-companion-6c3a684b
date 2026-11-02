@@ -84,7 +84,6 @@ export function SurahPlayer({ reader, chapter, downloadedOnly }: { reader: strin
       </div>
       {pending && <progress className="mt-2 h-1 w-full accent-primary" aria-label="Download progress" max={record?.total_bytes ?? 1} value={record?.total_bytes ? record.bytes : undefined} />}
       {saved && <p className="mt-1 flex items-center gap-1 text-xs text-primary"><Check size={12} />Plays without internet</p>}
-      {reciter.riwayah !== "Hafs an Asim" && <p className="mt-2 text-xs text-muted-foreground">Recited in the {reciter.riwayah} riwayah; some words differ slightly from the Hafs text shown below.</p>}
       {error && <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
     </section>
   );

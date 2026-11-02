@@ -211,6 +211,30 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "riwayah-duri";
+  src: url("/fonts/duri.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "riwayah-warsh";
+  src: url("/fonts/warsh.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "riwayah-qalun";
+  src: url("/fonts/qalun.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "riwayah-bazzi";
+  src: url("/fonts/bazzi.woff2") format("woff2");
+  font-display: swap;
+}
+
 @layer components {
   .star-badge {
     background: var(--primary);
